@@ -14,6 +14,7 @@ pub fn execute(args: Vec<String>) -> Result<(), CahierError> {
             "delete" => Ok(help_delete()),
             "help" => Ok(help_help()),
             "list" => Ok(help_list()),
+            "ping" => Ok(help_ping()),
             "send" => Ok(help_send()),
             "version" => Ok(help_version()),
             _ => Err(CahierError::InvalidCommand("Invalid help command. Use 'cahier help' for more information.".into())),
@@ -36,6 +37,7 @@ fn help() {
     \x1b[35mdelete\x1b[0m   Delete a host from the Cahier configuration file.
     \x1b[35mhelp\x1b[0m     Display this help message.
     \x1b[35mlist\x1b[0m     List all hosts in the Cahier configuration file.
+    \x1b[35mping\x1b[0m    Ping a host in the Cahier configuration file.
     \x1b[35msend\x1b[0m     Send a file or directory from the local machine to a host.
     \x1b[35mversion\x1b[0m  Display the current version of Cahier.
 
@@ -172,6 +174,23 @@ fn help_list() {
     List all hosts in the Cahier configuration file.
 ";
 
+    println!("{}", message);
+}
+
+fn help_ping() {
+    let message = "
+\x1b[35mcahier\x1b[0m ping
+
+\x1b[32musage\x1b[0m:
+    cahier ping <host>
+
+\x1b[32mdescription\x1b[0m:
+    Ping a host in the Cahier configuration file.
+
+\x1b[32marguments\x1b[0m:
+    \x1b[35mhost\x1b[0m    The nickname of the host to ping.
+";
+    
     println!("{}", message);
 }
 

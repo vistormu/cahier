@@ -8,6 +8,7 @@ mod connect;
 mod delete;
 mod help;
 mod list;
+mod ping;
 mod send;
 mod version;
 
@@ -35,6 +36,7 @@ pub fn run(args: Vec<String>) {
         "delete" => delete::execute(args),
         "help" => help::execute(args),
         "list" => list::execute(args),
+        "ping" => ping::execute(args),
         "send" => send::execute(args),
         "version" => version::execute(args),
         _ => Err(CahierError::InvalidCommand("Invalid command. Use 'cahier help' for more information.".into())),

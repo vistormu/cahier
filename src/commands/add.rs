@@ -1,36 +1,35 @@
-use std::env;
-use std::fs;
-use std::path::Path;
 use std::io::{self, Write};
-use std::process::Command;
+use std::process::{Command, Stdio};
+use std::net::IpAddr;
+
 use crate::error::CahierError;
+use crate::utils::{create_page, add_device_to_page};
+use crate::network_device:: NetworkDevice;
 
-const CAHIER_DIR: &str = ".config/cahier";
-
-
-fn create_cahier_page() -> Result<(), CahierError> {
-    let home_dir = env::var("HOME")?;
-
-    let path = Path::new(home_dir.as_str()).join(CAHIER_DIR);
-
-    if !path.exists() {
-        fs::create_dir_all(path.clone())?;
-    }
-
-    let file_path = path.join("page");
-    if !file_path.exists() {
-        fs::File::create(file_path)?;
-    }
-
-    Ok(())
-}
 
 pub fn execute(args: Vec<String>) -> Result<(), CahierError> {
     if args.len() > 1 {
         return Err(CahierError::InvalidCommand("Too many arguments provided. Use 'cahier help add' for more information".into()));
     }
 
-    create_cahier_page()?;
+    create_page()?;
+
+    let device = get_network_device()?;
+    create_ssh_key()?;
+    send_ssh_key(&device)?;
+    add_device_to_page(device)?;
+    
+    Ok(())
+}
+
+fn get_network_device() -> Result<NetworkDevice, CahierError> {
+    // nickname
+    print!("Enter a nickname for the host: ");
+    io::stdout().flush().unwrap();
+
+    let mut nickname = String::new();
+    io::stdin().read_line(&mut nickname)?;
+    nickname = nickname.chars().filter(|c| !c.is_whitespace()).collect();
 
     // host name
     print!("Enter the host name: ");
@@ -46,17 +45,21 @@ pub fn execute(args: Vec<String>) -> Result<(), CahierError> {
 
     let mut ip = String::new();
     io::stdin().read_line(&mut ip)?;
-    ip = ip.chars().filter(|c| !c.is_whitespace()).collect();
+    ip = ip.chars()
+        .filter(|c| !c.is_whitespace())
+        .collect();
 
-    // nickname
-    print!("Enter a nickname for the host: ");
-    io::stdout().flush().unwrap();
 
-    let mut nickname = String::new();
-    io::stdin().read_line(&mut nickname)?;
-    nickname = nickname.chars().filter(|c| !c.is_whitespace()).collect();
+    let ip: IpAddr = ip.parse()?;
 
-    // ssh-keygen
+    Ok(NetworkDevice {
+        host,
+        ip,
+        nickname,
+    })
+}
+
+fn create_ssh_key() -> Result<(), CahierError> {
     print!("Do you want to generate a new ssh key? (y/[n]): ");
     io::stdout().flush().unwrap();
 
@@ -65,17 +68,25 @@ pub fn execute(args: Vec<String>) -> Result<(), CahierError> {
     generate_key = generate_key.chars().filter(|c| !c.is_whitespace()).collect();
 
     if generate_key == "y" {
-        Command::new("ssh-keygen")
-            .arg("-t")
-            .arg("rsa")
-            .arg("-b")
-            .arg("4096")
-            .arg("-C")
-            .arg(format!("cahier@{}", host))
-            .output()?;
+        println!("\n\x1b[33mGenerating a new ssh key\x1b[0m\n");
+        let keygen_command = "ssh-keygen -t rsa -b 4096";
+        let status = Command::new("sh")
+            .arg("-c")
+            .arg(keygen_command)
+            .stdin(Stdio::inherit())
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
+            .status()?;
+
+        if !status.success() {
+            return Err(CahierError::CommandFailed("ssh-keygen".into()));
+        }
     }
 
-    // ssh-copy-id
+    Ok(())
+}
+
+fn send_ssh_key(device: &NetworkDevice) -> Result<(), CahierError> {
     print!("Do you want to copy the ssh key to the host? (y/[n]): ");
     io::stdout().flush().unwrap();
 
@@ -84,23 +95,20 @@ pub fn execute(args: Vec<String>) -> Result<(), CahierError> {
     copy_key = copy_key.chars().filter(|c| !c.is_whitespace()).collect();
 
     if copy_key == "y" {
-        Command::new("ssh-copy-id")
-            .arg(format!("{}@{}", host, ip))
-            .output()?;
+        println!("\n\x1b[33mCopying the ssh key to the host\x1b[0m\n");
+        let ssh_key_command = format!("ssh-copy-id {}@{}", device.host, device.ip);
+        let status = Command::new("sh")
+            .arg("-c")
+            .arg(ssh_key_command)
+            .stdin(Stdio::inherit())
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
+            .status()?;
+
+        if !status.success() {
+            return Err(CahierError::CommandFailed("ssh-copy-id".into()));
+        }
     }
-
-    // write to file
-    let home_dir = env::var("HOME")?;
-    let path = Path::new(home_dir.as_str()).join(CAHIER_DIR).join("page");
-
-    let mut file = fs::OpenOptions::new()
-        .append(true)
-        .open(path)?;
-
-    writeln!(file, "{}: {}@{}", nickname, host, ip)?;
-    
-    println!("\nSuccessfully added a new entry to the cahier page:");
-    println!(" -> \x1b[36m{}\x1b[0m: \x1b[33m{}\x1b[0m@\x1b[35m{}\x1b[0m", nickname, host, ip);
 
     Ok(())
 }
