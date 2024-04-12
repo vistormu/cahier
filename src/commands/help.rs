@@ -16,6 +16,7 @@ pub fn execute(args: Vec<String>) -> Result<(), CahierError> {
             "list" => Ok(help_list()),
             "ping" => Ok(help_ping()),
             "send" => Ok(help_send()),
+            "setup" => Ok(help_setup()),
             "version" => Ok(help_version()),
             _ => Err(CahierError::InvalidCommand("Invalid help command. Use 'cahier help' for more information.".into())),
         },
@@ -37,8 +38,9 @@ fn help() {
     \x1b[35mdelete\x1b[0m   Delete a host from the Cahier configuration file.
     \x1b[35mhelp\x1b[0m     Display this help message.
     \x1b[35mlist\x1b[0m     List all hosts in the Cahier configuration file.
-    \x1b[35mping\x1b[0m    Ping a host in the Cahier configuration file.
+    \x1b[35mping\x1b[0m     Ping a host in the Cahier configuration file.
     \x1b[35msend\x1b[0m     Send a file or directory from the local machine to a host.
+    \x1b[35msetup\x1b[0m    Setup Cahier for the first time.
     \x1b[35mversion\x1b[0m  Display the current version of Cahier.
 
 For more information on a specific command, use 'cahier help <command>'.
@@ -59,7 +61,6 @@ fn help_add() {
         - Host name: The name of the host.
         - IP address: The IP address of the host.
         - Nickname: A nickname for the host.
-        - Wether to generate a new ssh key in your machine.
         - Wether to send the ssh key to the host.
 ";
 
@@ -199,18 +200,36 @@ fn help_send() {
 \x1b[35mcahier\x1b[0m send
 
 \x1b[32musage\x1b[0m:
-    cahier send <host> <file>
+    cahier send <host> <file> <destination>
 
 \x1b[32mdescription\x1b[0m:
     Send a file or directory from the local machine to a host.
 
 \x1b[32marguments\x1b[0m:
-    \x1b[35mhost\x1b[0m    The nickname of the host to which to send the file.
-    \x1b[35mfile\x1b[0m    The file or directory to send to the host.
+    \x1b[35mhost\x1b[0m           The nickname of the host to which to send the file.
+    \x1b[35mfile\x1b[0m           The file or directory to send to the host.
+    \x1b[35mdestination\x1b[0m    The destination directory on the host.
 ";
 
     println!("{}", message);
 }
+
+fn help_setup() {
+    let message = "
+\x1b[35mcahier\x1b[0m setup
+
+\x1b[32musage\x1b[0m:
+    cahier setup
+
+\x1b[32mdescription\x1b[0m:
+    Setup Cahier for the first time. It will prompt you for the following information:
+        - Configuration file path: The path to the Cahier configuration file.
+        - Wether to generate a new ssh key in your machine.
+";  
+
+    println!("{}", message);
+}
+
 
 fn help_version() {
     let message = "

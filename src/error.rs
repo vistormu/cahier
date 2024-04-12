@@ -9,6 +9,8 @@ pub enum CahierError {
     InvalidIp(String),
     DeviceNotFound(String),
     CommandFailed(String),
+    SetupNotComplete,
+    UnsupportedShell(String),
 }
 
 impl fmt::Display for CahierError {
@@ -20,6 +22,8 @@ impl fmt::Display for CahierError {
             CahierError::InvalidIp(ref err) => write!(f, "Invalid IP address:\n{}", err),
             CahierError::DeviceNotFound(ref err) => write!(f, "Device not found:\n{}", err),
             CahierError::CommandFailed(ref err) => write!(f, "Command failed:\n{}", err),
+            CahierError::SetupNotComplete => write!(f, "Setup not complete. Run 'cahier help setup' to complete setup."),
+            CahierError::UnsupportedShell(ref err) => write!(f, "Unsupported shell:\n{}", err),
         }
     }
 }
@@ -53,3 +57,10 @@ impl From<std::string::FromUtf8Error> for CahierError {
         CahierError::InvalidIp(err.to_string())
     }
 }
+
+impl From<std::string::FromUtf16Error> for CahierError {
+    fn from(err: std::string::FromUtf16Error) -> CahierError {
+        CahierError::InvalidIp(err.to_string())
+    }
+}
+

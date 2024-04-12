@@ -7,7 +7,7 @@ pub fn execute(args: Vec<String>) -> Result<(), CahierError> {
         return Err(CahierError::InvalidCommand("Too many arguments provided. Use 'cahier help version' for more information".into()));
     }
 
-    println!("Cahier version {}", VERSION);
+    println!("\x1b[35mcahier\x1b[0m {}", VERSION);
 
     Ok(())
 }

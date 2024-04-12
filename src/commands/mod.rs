@@ -10,6 +10,7 @@ mod help;
 mod list;
 mod ping;
 mod send;
+mod setup;
 mod version;
 
 fn exit_with_error(message: &str) {
@@ -38,6 +39,7 @@ pub fn run(args: Vec<String>) {
         "list" => list::execute(args),
         "ping" => ping::execute(args),
         "send" => send::execute(args),
+        "setup" => setup::execute(args),
         "version" => version::execute(args),
         _ => Err(CahierError::InvalidCommand("Invalid command. Use 'cahier help' for more information.".into())),
     };

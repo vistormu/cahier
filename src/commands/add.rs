@@ -3,7 +3,7 @@ use std::process::{Command, Stdio};
 use std::net::IpAddr;
 
 use crate::error::CahierError;
-use crate::utils::{create_page, add_device_to_page};
+use crate::utils::add_device_to_page;
 use crate::network_device:: NetworkDevice;
 
 
@@ -12,10 +12,7 @@ pub fn execute(args: Vec<String>) -> Result<(), CahierError> {
         return Err(CahierError::InvalidCommand("Too many arguments provided. Use 'cahier help add' for more information".into()));
     }
 
-    create_page()?;
-
     let device = get_network_device()?;
-    create_ssh_key()?;
     send_ssh_key(&device)?;
     add_device_to_page(device)?;
     
@@ -24,7 +21,7 @@ pub fn execute(args: Vec<String>) -> Result<(), CahierError> {
 
 fn get_network_device() -> Result<NetworkDevice, CahierError> {
     // nickname
-    print!("Enter a nickname for the host: ");
+    print!("Enter a \x1b[35mnickname\x1b[0m for the host: ");
     io::stdout().flush().unwrap();
 
     let mut nickname = String::new();
@@ -32,7 +29,7 @@ fn get_network_device() -> Result<NetworkDevice, CahierError> {
     nickname = nickname.chars().filter(|c| !c.is_whitespace()).collect();
 
     // host name
-    print!("Enter the host name: ");
+    print!("Enter the \x1b[35mhost name\x1b[0m: ");
     io::stdout().flush().unwrap();
 
     let mut host = String::new();
@@ -40,7 +37,7 @@ fn get_network_device() -> Result<NetworkDevice, CahierError> {
     host = host.chars().filter(|c| !c.is_whitespace()).collect();
 
     // ip address
-    print!("Enter the ip address: ");
+    print!("Enter the \x1b[35mip address\x1b[0m: ");
     io::stdout().flush().unwrap();
 
     let mut ip = String::new();
@@ -59,35 +56,8 @@ fn get_network_device() -> Result<NetworkDevice, CahierError> {
     })
 }
 
-fn create_ssh_key() -> Result<(), CahierError> {
-    print!("Do you want to generate a new ssh key? (y/[n]): ");
-    io::stdout().flush().unwrap();
-
-    let mut generate_key = String::new();
-    io::stdin().read_line(&mut generate_key)?;
-    generate_key = generate_key.chars().filter(|c| !c.is_whitespace()).collect();
-
-    if generate_key == "y" {
-        println!("\n\x1b[33mGenerating a new ssh key\x1b[0m\n");
-        let keygen_command = "ssh-keygen -t rsa -b 4096";
-        let status = Command::new("sh")
-            .arg("-c")
-            .arg(keygen_command)
-            .stdin(Stdio::inherit())
-            .stdout(Stdio::inherit())
-            .stderr(Stdio::inherit())
-            .status()?;
-
-        if !status.success() {
-            return Err(CahierError::CommandFailed("ssh-keygen".into()));
-        }
-    }
-
-    Ok(())
-}
-
 fn send_ssh_key(device: &NetworkDevice) -> Result<(), CahierError> {
-    print!("Do you want to copy the ssh key to the host? (y/[n]): ");
+    print!("Do you want to \x1b[35msend the ssh key\x1b[0m to the host? (y/[n]): ");
     io::stdout().flush().unwrap();
 
     let mut copy_key = String::new();

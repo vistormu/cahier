@@ -5,17 +5,24 @@ use std::path::Path;
 use std::io::Write;
 
 use crate::error::CahierError;
-use crate::constants::CAHIER_DIR;
 use crate::network_device::NetworkDevice;
 
 
-pub fn create_page() -> Result<(), CahierError> {
-    let home_dir = env::var("HOME")?;
+pub fn create_page(path: String) -> Result<(), CahierError> {
+    let mut path = path;
+    if path.starts_with("~") {
+        let home_dir = env::var("HOME")?;
+        path = path.replace("~", home_dir.as_str());
+    }
 
-    let path = Path::new(home_dir.as_str()).join(CAHIER_DIR);
+    if path.contains("~") {
+        return Err(CahierError::CommandFailed(("path contains invalid character '~'").to_string()));
+    }
+
+    let path = Path::new(path.as_str());
 
     if !path.exists() {
-        fs::create_dir_all(path.clone())?;
+        fs::create_dir_all(path)?;
     }
 
     let file_path = path.join("page");
@@ -27,25 +34,26 @@ pub fn create_page() -> Result<(), CahierError> {
 }
 
 pub fn clear_page() -> Result<(), CahierError> {
-    let home_dir = env::var("HOME")?;
+    let cahier_dir = match env::var("CAHIER_PATH") { 
+        Ok(dir) => dir,
+        Err(_) => return Err(CahierError::SetupNotComplete),
+    };
 
-    let path = Path::new(home_dir.as_str()).join(CAHIER_DIR);
+    let path = Path::new(cahier_dir.as_str()).join("page");
 
-    if !path.exists() {
-        return Ok(());
-    }
-
-    let file_path = path.join("page");
-    if file_path.exists() {
-        fs::remove_file(file_path)?;
+    if path.exists() {
+        fs::remove_file(path)?;
     }
 
     Ok(())
 }
 
 pub fn read_devices_from_page() -> Result<Vec<NetworkDevice>, CahierError> {
-    let home_dir = env::var("HOME")?;
-    let path = Path::new(home_dir.as_str()).join(CAHIER_DIR).join("page");
+    let cahier_dir = match env::var("CAHIER_PATH") { 
+        Ok(dir) => dir,
+        Err(_) => return Err(CahierError::SetupNotComplete),
+    };
+    let path = Path::new(cahier_dir.as_str()).join("page");
 
     let file = fs::File::open(path)?;
     let reader = io::BufReader::new(file);
@@ -69,8 +77,11 @@ pub fn read_devices_from_page() -> Result<Vec<NetworkDevice>, CahierError> {
 }
 
 pub fn add_device_to_page(device: NetworkDevice) -> Result<(), CahierError> {
-    let home_dir = env::var("HOME")?;
-    let path = Path::new(home_dir.as_str()).join(CAHIER_DIR).join("page");
+    let cahier_dir = match env::var("CAHIER_PATH") { 
+        Ok(dir) => dir,
+        Err(_) => return Err(CahierError::SetupNotComplete),
+    };
+    let path = Path::new(cahier_dir.as_str()).join("page");
 
     let mut file = fs::OpenOptions::new()
         .append(true)
@@ -86,8 +97,11 @@ pub fn add_device_to_page(device: NetworkDevice) -> Result<(), CahierError> {
 }
 
 pub fn retrieve_device_by_nickname(nickname: &str) -> Result<NetworkDevice, CahierError> {
-    let home_dir = env::var("HOME")?;
-    let path = Path::new(home_dir.as_str()).join(CAHIER_DIR).join("page");
+    let cahier_dir = match env::var("CAHIER_PATH") { 
+        Ok(dir) => dir,
+        Err(_) => return Err(CahierError::SetupNotComplete),
+    };
+    let path = Path::new(cahier_dir.as_str()).join("page");
 
     let file = fs::File::open(path)?;
     let reader = io::BufReader::new(file);
@@ -112,8 +126,11 @@ pub fn retrieve_device_by_nickname(nickname: &str) -> Result<NetworkDevice, Cahi
 }
 
 pub fn delete_device_by_nickname(nickname: &str) -> Result<(), CahierError> {
-    let home_dir = env::var("HOME")?;
-    let path = Path::new(home_dir.as_str()).join(CAHIER_DIR).join("page");
+    let cahier_dir = match env::var("CAHIER_PATH") { 
+        Ok(dir) => dir,
+        Err(_) => return Err(CahierError::SetupNotComplete),
+    };
+    let path = Path::new(cahier_dir.as_str()).join("page");
 
     let file = fs::File::open(path.clone())?;
     let reader = io::BufReader::new(file);
@@ -135,6 +152,26 @@ pub fn delete_device_by_nickname(nickname: &str) -> Result<(), CahierError> {
 
     for line in lines {
         writeln!(file, "{}", line)?;
+    }
+
+    Ok(())
+}
+
+pub fn open_page() -> Result<(), CahierError> {
+    let cahier_dir = match env::var("CAHIER_PATH") { 
+        Ok(dir) => dir,
+        Err(_) => return Err(CahierError::SetupNotComplete),
+    };
+    let path = Path::new(cahier_dir.as_str()).join("page");
+
+    let default_editor = env::var("EDITOR").unwrap_or_else(|_| "nano".to_string());
+
+    let status = std::process::Command::new(default_editor.clone())
+        .arg(path)
+        .status()?;
+
+    if !status.success() {
+        return Err(CahierError::CommandFailed((default_editor).to_string()));
     }
 
     Ok(())
