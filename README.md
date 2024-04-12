@@ -4,7 +4,7 @@
     <img style="width: 20%" src="assets/logo.png">
 </p>
 
-Meet Cahier! Cahier is a single-page notebook that will help you manage and handle your SSH connections. Despite having a single page, Cahier will efficiently manage all your SSH connections.
+Meet Cahier! Cahier is a single-page notebook that will help you manage and handle your SSH connections.
 
 ## Usage
 
