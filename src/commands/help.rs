@@ -15,6 +15,7 @@ pub fn execute(args: Vec<String>) -> Result<(), CahierError> {
             "help" => Ok(help_help()),
             "list" => Ok(help_list()),
             "ping" => Ok(help_ping()),
+            "remove" => Ok(help_delete()), // Alias for "delete"
             "send" => Ok(help_send()),
             "setup" => Ok(help_setup()),
             "version" => Ok(help_version()),
@@ -39,6 +40,7 @@ fn help() {
     \x1b[35mhelp\x1b[0m     Display this help message.
     \x1b[35mlist\x1b[0m     List all hosts in the Cahier configuration file.
     \x1b[35mping\x1b[0m     Ping a host in the Cahier configuration file.
+    \x1b[35mremove\x1b[0m   Alias for 'delete'.
     \x1b[35msend\x1b[0m     Send a file or directory from the local machine to a host.
     \x1b[35msetup\x1b[0m    Setup Cahier for the first time.
     \x1b[35mversion\x1b[0m  Display the current version of Cahier.

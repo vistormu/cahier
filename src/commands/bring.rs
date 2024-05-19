@@ -13,7 +13,7 @@ pub fn execute(args: Vec<String>) -> Result<(), CahierError> {
 
     let device = retrieve_device_by_nickname(&host)?;
 
-    let scp_command = format!("scp -r {}@{}:{} .", device.host, device.ip, file);
+    let scp_command = format!("scp -P {} -r {}@{}:{} .", device.port, device.host, device.ip, file);
 
     Command::new("sh")
         .arg("-c")

@@ -38,6 +38,7 @@ pub fn run(args: Vec<String>) {
         "help" => help::execute(args),
         "list" => list::execute(args),
         "ping" => ping::execute(args),
+        "remove" => delete::execute(args),
         "send" => send::execute(args),
         "setup" => setup::execute(args),
         "version" => version::execute(args),

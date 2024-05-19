@@ -11,7 +11,7 @@ pub fn execute(args: Vec<String>) -> Result<(), CahierError> {
 
     println!("Connecting to \x1b[35m{}\x1b[0m.", device.nickname);
 
-    let ssh_command = format!("ssh -X {}@{}", device.host, device.ip);
+    let ssh_command = format!("ssh -X {}@{} -p {}", device.host, device.ip, device.port);
 
     std::process::Command::new("sh")
         .arg("-c")

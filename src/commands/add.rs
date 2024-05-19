@@ -49,10 +49,29 @@ fn get_network_device() -> Result<NetworkDevice, CahierError> {
 
     let ip: IpAddr = ip.parse()?;
 
+    // port
+    print!("Enter the \x1b[35mport\x1b[0m (optional): ");
+    io::stdout().flush().unwrap();
+
+    let mut port = String::new();
+    io::stdin().read_line(&mut port)?;
+    port = port.chars().filter(|c| !c.is_whitespace()).collect();
+
+    let port = if port.is_empty() {
+        "22".to_string()
+    } else {
+        port
+    };
+
+    let port: u16 = port.parse()?;
+
+
+
     Ok(NetworkDevice {
         host,
         ip,
         nickname,
+        port,
     })
 }
 
@@ -66,7 +85,7 @@ fn send_ssh_key(device: &NetworkDevice) -> Result<(), CahierError> {
 
     if copy_key == "y" {
         println!("\n\x1b[33mCopying the ssh key to the host\x1b[0m\n");
-        let ssh_key_command = format!("ssh-copy-id {}@{}", device.host, device.ip);
+        let ssh_key_command = format!("ssh-copy-id -p {} {}@{}", device.port, device.host, device.ip);
         let status = Command::new("sh")
             .arg("-c")
             .arg(ssh_key_command)

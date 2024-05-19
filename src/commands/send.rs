@@ -14,7 +14,7 @@ pub fn execute(args: Vec<String>) -> Result<(), CahierError> {
 
     let device = retrieve_device_by_nickname(&host)?;
 
-    let scp_command = format!("scp -r {} {}@{}:{}", file, device.host, device.ip, destination);
+    let scp_command = format!("scp -P {} -r {} {}@{}:{}", device.port, file, device.host, device.ip, destination);
 
     Command::new("sh")
         .arg("-c")

@@ -9,8 +9,6 @@ pub enum CahierError {
     InvalidIp(String),
     DeviceNotFound(String),
     CommandFailed(String),
-    SetupNotComplete,
-    UnsupportedShell(String),
 }
 
 impl fmt::Display for CahierError {
@@ -22,8 +20,6 @@ impl fmt::Display for CahierError {
             CahierError::InvalidIp(ref err) => write!(f, "Invalid IP address:\n{}", err),
             CahierError::DeviceNotFound(ref err) => write!(f, "Device not found:\n{}", err),
             CahierError::CommandFailed(ref err) => write!(f, "Command failed:\n{}", err),
-            CahierError::SetupNotComplete => write!(f, "Setup not complete. Run 'cahier help setup' to complete setup."),
-            CahierError::UnsupportedShell(ref err) => write!(f, "Unsupported shell:\n{}", err),
         }
     }
 }
