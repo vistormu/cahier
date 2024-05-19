@@ -31,7 +31,7 @@ Then, you can use Cahier to manage your SSH connections with the following comma
 
 ## Installation
 
-> Cahier is only available for macOS (for now).
+> Cahier is not available for Windows or Linux ARM architectures yet.
 
 Download the Cahier binary for your machine from the [Releases Page](https://github.com/vistormu/cahier/releases).
 
